@@ -1,0 +1,86 @@
+name: query-exporter
+version: git
+summary: Export Prometheus metrics from SQL queries
+description: |
+  query-exporter is a Prometheus exporter which allows collecting metrics from
+  database queries, at specified time intervals or when a request to the
+  metrics endpoint is performed.
+
+  Each query can be run on multiple databases, and update multiple metrics.
+
+  The snap provides both the `query-exporter` command and a deamon instance of
+  the command, managed via a Systemd service.
+  To run the latter:
+
+    - create or edit `/var/snap/query-exporter/current/config.yaml` with the
+      configuration
+    - run `sudo snap restart query-exporter`
+
+  Currently supported databases are:
+
+    - PostgreSQL (`postgresql://`)
+    - MySQL (`mysql://`)
+    - SQLite (`sqlite://`)
+    - Microsoft SQL Server (`mssql://`)
+    - IBM DB2 (`db2://`) on supported architectures (x86_64, ppc64le and
+      s390x)
+
+license: GPL-3.0+
+icon: logo.svg
+confinement: strict
+grade: stable
+base: core20
+
+apps:
+  daemon:
+    command: daemon.sh
+    daemon: simple
+    plugs:
+      - network-bind
+      - network
+  query-exporter:
+    command: bin/query-exporter
+    plugs:
+      - home
+      - network-bind
+      - network
+    completer: query-exporter.completion
+
+parts:
+  query-exporter:
+    plugin: python
+    source: .
+    source-type: git
+    python-packages:
+      - ibm-db-sa; platform_machine == 'x86_64'
+      - ibm-db-sa; platform_machine == 'ppc64le'
+      - ibm-db-sa; platform_machine == 's390x'
+      - mysqlclient
+      - psycopg2
+      - pyodbc
+    build-packages:
+      - libmysqlclient-dev
+      - libpq-dev
+      - libssl-dev
+      - unixodbc-dev
+    stage-packages:
+      - libmysqlclient21
+      - libodbc1
+      - libpq5
+      - libxml2
+    filesets:
+      bins:
+        - bin/python3
+        - bin/query-exporter
+      libs:
+      - lib
+      - usr/lib
+    prime:
+      - $bins
+      - $libs
+      - etc
+      - pyvenv.cfg
+
+  wrappers:
+    plugin: dump
+    source: snap/local
