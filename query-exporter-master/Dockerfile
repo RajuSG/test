@@ -1,4 +1,4 @@
-FROM python:3.8-slim AS build-image
+FROM python:3.13.0a3-slim AS build-image
 
 RUN apt update
 RUN apt full-upgrade -y
@@ -30,7 +30,7 @@ RUN mkdir -p /opt/oracle/instantclient
 RUN mv instantclient*/* /opt/oracle/instantclient
 
 
-FROM python:3.8-slim
+FROM python:3.13.0a3-slim
 
 RUN apt update && \
     apt full-upgrade -y && \
